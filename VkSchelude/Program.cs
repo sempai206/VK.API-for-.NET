@@ -10,6 +10,7 @@ namespace VkSchelude
     {
         static void Main(string[] args)
         {
+            var a = 0;
         }
     }
 }
