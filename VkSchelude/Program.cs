@@ -18,13 +18,21 @@ namespace VkSchelude
     {
         static void Main(string[] args)
         {
+            Authorize.setAuthorize();
             Thread tomorrowScheludeThread = new Thread(Schedule.Start);
             tomorrowScheludeThread.Start();
+            Thread vkBotThread = new Thread(groupBot.Start);
+            vkBotThread.Start();
             while (true)
             {
                 var command = Console.ReadLine();
                 if (command.Equals("schedule"))
-                    Schedule.postSchedule();
+                {
+                    //Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString());
+                    Schedule.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString()));
+                }
+                else if (command.Equals("schedule today"))
+                    Schedule.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.Date.ToString()));
                 else if (command.Equals("parse"))
                     new Document().Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\rasp.xls");
             }
