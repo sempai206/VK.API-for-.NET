@@ -25,6 +25,8 @@ namespace VkSchelude
                 var command = Console.ReadLine();
                 if (command.Equals("schedule"))
                     Schedule.postSchedule();
+                else if (command.Equals("parse"))
+                    new Document().Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\rasp.xls");
             }
         }
     }
