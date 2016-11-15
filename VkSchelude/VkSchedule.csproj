@@ -7,8 +7,8 @@
     <ProjectGuid>{3F048218-E886-48AB-BB8B-900D50AB1F36}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VkSchelude</RootNamespace>
-    <AssemblyName>VkSchelude</AssemblyName>
+    <RootNamespace>VkSchedule</RootNamespace>
+    <AssemblyName>VkSchedule</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -58,6 +58,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Document.cs" />
+    <Compile Include="groupBot.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Schedule.cs" />
