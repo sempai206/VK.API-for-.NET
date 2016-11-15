@@ -28,14 +28,8 @@ namespace VkSchelude
             int rowCount = xlRange.Rows.Count;
             for (int i = 1; i <= rowCount; i++)
             {
-                // первый аргумент - номер строки
-                // второй аргумент - номер столбца
-                // основная работа - третий столбец
-                if (i > 12)
-                {
-                }
-                    #region---Prepare data
-                    var ExcelCells = ((Excel.Range)Worksheet.Cells[i, j]);
+                #region---Prepare data
+                var ExcelCells = ((Excel.Range)Worksheet.Cells[i, j]);
                 string mergedAddress = String.Empty;
                 if (ExcelCells.MergeCells)
                 {
@@ -59,7 +53,10 @@ namespace VkSchelude
                     string dataString = xlRange.Cells[i, j].Value2.ToString();
                     if (dataString.Length < 10) continue;
                     int number = int.Parse(xlRange.Cells[i, 2].Value2.ToString());
-                    string hall = xlRange.Cells[i, 4].Value2.ToString();
+                    var itemhall = xlRange.Cells[i, 4];
+                    string hall = String.Empty;
+                    if (itemhall != null && itemhall.Value2 != null)
+                        hall = xlRange.Cells[i, 4].Value2.ToString();
                     var a = ParseItemRow(dataString, day, number, hall, ExcelCells.MergeCells, mergedAddress);
                 }
             }
@@ -76,7 +73,7 @@ namespace VkSchelude
             {
                 //foreach (string partData in DataString.Split('\n'))
                 //{
-                for(int i = 0; i< DataString.Split('\n').Count(); i++)
+                for (int i = 0; i < DataString.Split('\n').Count(); i++)
                 {
                     string partData = DataString.Split('\n')[i];
                     if (Hall.Split('\n')[i].Equals("смен.об."))
@@ -90,45 +87,61 @@ namespace VkSchelude
             }
             string teacher = DataString.Split(':')[DataString.Split(':').Count() - 1];
             string dates = DataString.Substring(DataString.IndexOf(';') + 1);
-            dates = dates.Substring(0, dates.LastIndexOf(':')).Trim();
-            #region---Проверка "с...по"
-            var itemsFromTo = Regex.Match(dates, patternFromTo);
-            while (itemsFromTo.Captures.Count > 0)
+            if (Regex.IsMatch(dates, patternSingleDate)) // нет смысла парсить, если нет дат
             {
-                var bb = Regex.Matches(itemsFromTo.Captures[0].Value, patternSingleDate);
-                LessonInfo currentItem = new LessonInfo();
-                currentItem.DateStart = DateTime.Parse(bb[0].Value);
-                currentItem.DateEnd = DateTime.Parse(bb[1].Value);
-                string type = Regex.Matches(itemsFromTo.Captures[0].Value, @"г.-[\,,\.,а-я,А-Я]+")[0]
-                    .Value
-                    .Replace("г.-", "");
-                while (Regex.IsMatch(type, patternTrash + @"$")) // обрезаем мусор в конце
+                dates = dates.Substring(0, dates.LastIndexOf(':')).Trim();
+                #region---Проверка "с...по"
+                var itemsFromTo = Regex.Match(dates, patternFromTo);
+                while (itemsFromTo.Captures.Count > 0)
                 {
-                    type = type.Substring(0, type.Length - 1);
+                    var bb = Regex.Matches(itemsFromTo.Captures[0].Value, patternSingleDate);
+                    LessonInfo currentItem = new LessonInfo();
+                    currentItem.DateStart = DateTime.Parse(bb[0].Value);
+                    currentItem.DateEnd = DateTime.Parse(bb[1].Value);
+                    string type = Regex.Matches(itemsFromTo.Captures[0].Value, @"г.-[\,,\.,а-я,А-Я]+")[0]
+                        .Value
+                        .Replace("г.-", "");
+                    while (Regex.IsMatch(type, patternTrash + @"$")) // обрезаем мусор в конце
+                    {
+                        type = type.Substring(0, type.Length - 1);
+                    }
+                    while (Regex.IsMatch(type, "^" + patternTrash)) // обрезаем мусор в начале
+                    {
+                        type = type.Substring(1);
+                    }
+                    currentItem.Type = type;
+                    currentItem.Lesson = DataString.Split(';')[0];
+                    dates = dates.Replace(itemsFromTo.Captures[0].Value, "");
+                    itemsFromTo = Regex.Match(dates, patternFromTo);
+                    result.Add(currentItem);
                 }
-                while (Regex.IsMatch(type, "^" + patternTrash)) // обрезаем мусор в начале
-                {
-                    type = type.Substring(1);
-                }
-                currentItem.Type = type;
-                dates = dates.Replace(itemsFromTo.Captures[0].Value, "");
-                itemsFromTo = Regex.Match(dates, patternFromTo);
-                result.Add(currentItem);
-            }
-            itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
-            while (itemsFromTo.Captures.Count > 0)
-            {
-                //парсинг остальных форматов записи даты
+                #endregion
+                #region
                 itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
+                while (itemsFromTo.Captures.Count > 0)
+                {
+                    //парсинг остальных форматов записи даты
+                    dates = dates.Replace(itemsFromTo.Captures[0].Value, "");
+                    itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
+                }
+                #endregion
             }
-            foreach(var item in result)
+            else
+            {
+                result.Add(new LessonInfo
+                {
+                    Lesson = DataString.Split(';')[0]
+                }
+                );
+            }
+            foreach (var item in result)
             {
                 item.Day = Day;
                 item.Teacher = teacher;
                 item.Number = Number;
                 item.Classroom = Hall;
             }
-            #endregion
+
             Console.WriteLine($"{Day} - {DataString}");
             return result;
         }
