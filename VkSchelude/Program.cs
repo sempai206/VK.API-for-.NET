@@ -23,8 +23,10 @@ namespace VkSchelude
             while (true)
             {
                 var command = Console.ReadLine();
-                if (command.Equals("schedule"))
-                    Schedule.postSchedule();
+                //if (command.Equals("schedule"))
+                //    Schedule.postSchedule(DateTime.Now.AddDays(1).Date.ToString());
+                //else if (command.Equals("schedule today"))
+                //    Schedule.postSchedule(DateTime.Now.Date.ToString());
                 else if (command.Equals("parse"))
                     new Document().Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\rasp.xls");
             }

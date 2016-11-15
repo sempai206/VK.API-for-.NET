@@ -63,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Authorize.cs" />
     <Compile Include="Document.cs" />
     <Compile Include="groupBot.cs" />
     <Compile Include="Program.cs" />
