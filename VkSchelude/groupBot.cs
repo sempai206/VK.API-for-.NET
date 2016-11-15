@@ -11,15 +11,11 @@ namespace VkSchelude
 {
     class groupBot
     {
-        static VkApi vkBot = new VkApi();
-        public void Start()
+        public static void Start()
         {
-            string[] readText = System.IO.File.ReadAllLines("authData.txt");
-            string groupAccessToken = readText[readText.Length];
-            vkBot.Authorize(groupAccessToken);
             while (true)
             {
-                var dialogs = vkBot.Messages.GetDialogs(new MessagesDialogsGetParams
+                var dialogs = Authorize.vkGroup.Messages.GetDialogs(new MessagesDialogsGetParams
                 {
                     Count = 200,
                     Unread = true
@@ -32,17 +28,20 @@ namespace VkSchelude
                         {
                             switch (dialog.Body)
                             {
-                                case "&Расписание на завтра":
-                                    vkBot.Messages.Send(new MessagesSendParams
-                                    {
-                                        UserId = dialog.UserId,
-                                    });
+                                //case "&Расписание на завтра":
+                                //    vkBot.Messages.Send(new MessagesSendParams
+                                //    {
+                                //        UserId = dialog.UserId,
+                                //    });
+                                //    break;
+                                case "&test":
+                                    Schedule.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.ToString()), dialog.UserId);
                                     break;
                             }
                         }
                     }
                 }
-                Thread.Sleep(60000);
+                Thread.Sleep(1000);
             }
         }
     }

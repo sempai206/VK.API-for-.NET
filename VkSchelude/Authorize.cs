@@ -6,11 +6,18 @@ using System.Threading.Tasks;
 using VkNet;
 using VkNet.Enums.Filters;
 
-namespace VkSchedule
+namespace VkSchelude
 {
     class Authorize
     {
-        public static VkApi AuthUser()
+        public static VkApi vkUser { get; set; }
+        public static VkApi vkGroup { get; set; }
+        public static void setAuthorize()
+        {
+            AuthUser();
+            AuthGroup();
+        }
+        public static void AuthUser()
         {
             List<string> authData = System.IO.File.ReadAllLines("authData.txt").ToList();
             var vk = new VkApi();
@@ -21,15 +28,14 @@ namespace VkSchedule
                 Password = authData[2],
                 Settings = Settings.All
             });
-            return vk;
+            vkUser = vk;
         }
-        public static VkApi AuthGroup()
+        public static void AuthGroup()
         {
             var vk = new VkApi();
-            string[] readText = System.IO.File.ReadAllLines("authData.txt");
-            string groupAccessToken = readText[readText.Length];
+            string groupAccessToken = System.IO.File.ReadAllLines("authData.txt")[3];
             vk.Authorize(groupAccessToken);
-            return vk;
+            vkGroup = vk;
         }
     }
 }
