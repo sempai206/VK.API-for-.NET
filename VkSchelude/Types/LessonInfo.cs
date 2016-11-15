@@ -14,6 +14,7 @@ namespace VkSchelude.Types
         public DateTime DateStart { get; set; }
         public DateTime DateEnd { get; set; }
         public string Classroom { get; set; }
-
+        public string Type { get; set; }
+        public string Teacher { get; set; }
     }
 }
