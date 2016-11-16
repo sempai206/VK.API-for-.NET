@@ -22,8 +22,8 @@ namespace VkSchelude
         static void Main(string[] args)
         {
             Authorize.setAuthorize();
-            Thread tomorrowScheludeThread = new Thread(Schedule.Start);
-            tomorrowScheludeThread.Start();
+            //Thread tomorrowScheludeThread = new Thread(Schedule.Start);
+            //tomorrowScheludeThread.Start();
             Thread vkBotThread = new Thread(groupBot.Start);
             vkBotThread.Start();
             while (_working)
