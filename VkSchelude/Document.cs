@@ -19,9 +19,18 @@ namespace VkSchelude
         private string patternMultiDate = @"(\d{1,2}\,){0,}\d{1,2}\.\d{1,2}\.\d{1,2}";
         private string patternHardDate = @"\d{1,2}\.\d{1,2};\.\d{1,2}\.\d{1,2}";
         private string patternTeacher = @"[А-Я,а-я,ё,Ё]+\.[А-Я,а-я,ё,Ё]{1}\.";
-        bool IsTest = false;
-        public void Parse(string excelDocPath)
+        bool EnableConsole = false;
+        public Document(bool _enableConsole = false)
         {
+            EnableConsole = _enableConsole;
+        }
+        public List<LessonInfo> Parse(string excelDocPath)
+        {
+            if (!System.IO.File.Exists(excelDocPath))
+            {
+                Console.WriteLine("Файл отсутствует в директории " + excelDocPath); // временно. должна возвращаться ошибка, чтоб тут никакой текст не выводился
+                return null;
+            }
             Excel.Application xlApp = new Excel.Application();
             Excel.Workbook xlWorkbook = xlApp.Workbooks.Open(excelDocPath);
             Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
@@ -50,7 +59,7 @@ namespace VkSchelude
                 #endregion
                 if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
                 {
-                    if (IsTest && i == 15)
+                    if (EnableConsole && i == 15)
                     {
 
                     }
@@ -64,7 +73,7 @@ namespace VkSchelude
                     allLessons.AddRange(ParseItemRow(dataString, day, number, hall, ExcelCells.MergeCells, mergedAddress));
                 }
             }
-            if (IsTest)
+            if (EnableConsole)
             foreach (var item in allLessons)
             {
                 Console.WriteLine($"{item.Day} - " +
@@ -78,6 +87,7 @@ namespace VkSchelude
             //cleanup
             GC.Collect();
             GC.WaitForPendingFinalizers();
+            return allLessons;
         }
         private List<LessonInfo> ParseItemRow(string DataString, string Day, int Number, string Hall, bool Merged, string MergedAddress = null)
         {
