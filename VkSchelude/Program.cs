@@ -11,6 +11,7 @@ using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Model.RequestParams;
 using System.Windows.Forms;
+using VkSchelude.Utils;
 
 namespace VkSchelude
 {
@@ -29,10 +30,10 @@ namespace VkSchelude
                 if (command.Equals("schedule"))
                 {
                     //Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString());
-                    Schedule.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString()));
+                    Send.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")));
                 }
                 else if (command.Equals("schedule today"))
-                    Schedule.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.Date.ToString()));
+                    Send.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.Date.ToString("dd.MM.yyyy")));
                 else if (command.Equals("parse"))
                     new Document().Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\rasp.xls");
             }
