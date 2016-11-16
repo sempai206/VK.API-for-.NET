@@ -12,27 +12,19 @@ using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Model.RequestParams;
 using VkSchelude.Types;
+using VkSchelude.Utils;
 
 namespace VkSchelude
 {
     class Schedule
     {
-        //static List<string> authData = System.IO.File.ReadAllLines("authData.txt").ToList();
-        //static VkApi vkScheludePost = new VkApi();
-        //static int groupId = int.Parse(authData[3]);
-        //[DllImport("user32.dll")]
-        //private static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-        //[DllImport("kernel32.dll", ExactSpelling = true)]
-        //private static extern IntPtr GetConsoleWindow();
         public static void Start()
         {
-            //buildSchedule(DateTime.Now.AddDays(1).Date.ToString()); //test
-            //SendOnWall(Authorize.AuthUser(), buildSchedule(DateTime.Now.AddDays(1).Date.ToString()));
             while (true)
             {
                 if (DateTime.Now.Hour == 20)
                 {
-                    SendOnWall(Authorize.vkUser, buildSchedule(DateTime.Now.AddDays(1).Date.ToString()));
+                    Send.SendOnWall(Authorize.vkUser, buildSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")));
                 }
                 Thread.Sleep(600000);
             }
@@ -71,38 +63,6 @@ namespace VkSchelude
                 message += String.Format("{0} пара: {1}, преподаватель {2}, ауд. {3}\n", item.Number, item.Lesson, item.Teacher, item.Classroom);
             }
             return message;
-        }
-        public static void SendOnWall(VkApi vk, string message)
-        {
-            long groupId = -128223029;
-            var postIdSchedule = vk.Wall.Post(new WallPostParams
-            {
-                OwnerId = groupId,
-                FriendsOnly = false,
-                FromGroup = true,
-                Message = message
-            });
-            if (postIdSchedule != 0)
-                Console.WriteLine(String.Format("{0} - Расписание на {1} успешно размещено", DateTime.Now, DateTime.Now.AddDays(1).Date));
-            else
-                Console.WriteLine(String.Format("{0} - Ошибка!Расписание на {1} не было размещено", DateTime.Now, DateTime.Now.AddDays(1).Date));
-
-            //if (vkScheludePost.Wall.Pin(postIdSchedule) == true)
-            //    Console.WriteLine(String.Format("{0} - Расписание на {1} успешно закреплено", DateTime.Now, DateTime.Now.AddDays(1).Date));
-            //else
-            //    Console.WriteLine(String.Format("{0} - Ошибка!Расписание на {1} не было закреплено", DateTime.Now, DateTime.Now.AddDays(1).Date));
-        }
-        public static void SendInMessages(VkApi vk, string message, long? userId)
-        {
-            var postId = vk.Messages.Send(new MessagesSendParams
-            {
-                UserId = userId,
-                Message = message,
-            });
-            if (postId != 0)
-                Console.WriteLine(String.Format("{0} - Расписание пользователю успешно отправлено", DateTime.Now));
-            else
-                Console.WriteLine(String.Format("{0} - Ошибка!Расписание пользователю не было отправлено", DateTime.Now));
         }
         private static List<LessonInfo> getSchedule(string date)
         {

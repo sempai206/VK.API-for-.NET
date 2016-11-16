@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using VkNet;
 using VkNet.Model.RequestParams;
+using VkSchelude.Utils;
 
 namespace VkSchelude
 {
@@ -28,14 +29,12 @@ namespace VkSchelude
                         {
                             switch (dialog.Body)
                             {
-                                //case "&Расписание на завтра":
-                                //    vkBot.Messages.Send(new MessagesSendParams
-                                //    {
-                                //        UserId = dialog.UserId,
-                                //    });
-                                //    break;
+                                case "&Расписание на завтра":
+                                    Send.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")), dialog.UserId);
+                                    break;
+
                                 case "&test":
-                                    Schedule.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.ToString()), dialog.UserId);
+                                    Send.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.ToString("dd.MM.yyyy")), dialog.UserId);
                                     break;
                             }
                         }
