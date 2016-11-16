@@ -14,9 +14,12 @@ namespace VkSchelude
     {
         private string patternSingleDate = @"\d{1,2}\.\d{1,2}\.\d{1,2}";
         private string patternTrash = @"([-,\,,\.,\s])";
-        private string patternFromTo = @"с \d{1,2}\.\d{1,2}\.\d{1,2}г\. по \d{1,2}\.\d{1,2}\.\d{1,2}г\.-[а-я,А-я,\,,\.]+";
-        private string patternLesson = @"г.-[\,,\.,а-я,А-Я]+";
+        private string patternFromTo = @"с \d{1,2}\.\d{1,2}\.\d{1,2}г\. по \d{1,2}\.\d{1,2}\.\d{1,2}г\.-[а-я,А-я,\,,\.,ё]+";
+        private string patternLesson = @"г.-[\,,\.,а-я,А-Я,ё]+";
         private string patternMultiDate = @"(\d{1,2}\,){0,}\d{1,2}\.\d{1,2}\.\d{1,2}";
+        private string patternHardDate = @"\d{1,2}\.\d{1,2};\.\d{1,2}\.\d{1,2}";
+        private string patternTeacher = @"[А-Я,а-я,ё,Ё]+\.[А-Я,а-я,ё,Ё]{1}\.";
+        bool IsTest = false;
         public void Parse(string excelDocPath)
         {
             Excel.Application xlApp = new Excel.Application();
@@ -24,6 +27,7 @@ namespace VkSchelude
             Excel._Worksheet xlWorksheet = xlWorkbook.Sheets[1];
             Excel.Worksheet Worksheet = xlWorkbook.Sheets[1];
             Excel.Range xlRange = xlWorksheet.UsedRange;
+            List<LessonInfo> allLessons = new List<Types.LessonInfo>();
             int j = 3;
             int rowCount = xlRange.Rows.Count;
             for (int i = 1; i <= rowCount; i++)
@@ -46,7 +50,7 @@ namespace VkSchelude
                 #endregion
                 if (xlRange.Cells[i, j] != null && xlRange.Cells[i, j].Value2 != null)
                 {
-                    if (i == 18)
+                    if (IsTest && i == 15)
                     {
 
                     }
@@ -57,8 +61,19 @@ namespace VkSchelude
                     string hall = String.Empty;
                     if (itemhall != null && itemhall.Value2 != null)
                         hall = xlRange.Cells[i, 4].Value2.ToString();
-                    var a = ParseItemRow(dataString, day, number, hall, ExcelCells.MergeCells, mergedAddress);
+                    allLessons.AddRange(ParseItemRow(dataString, day, number, hall, ExcelCells.MergeCells, mergedAddress));
                 }
+            }
+            if (IsTest)
+            foreach (var item in allLessons)
+            {
+                Console.WriteLine($"{item.Day} - " +
+                    $"{item.Number} - " +
+                    $"{item.Lesson} - " +
+                    String.Format("{0};", item.DateStart != null ? (((DateTime)item.DateStart).ToShortDateString()) : "null") +
+                    String.Format("{0} - ", item.DateEnd != null ? (((DateTime)item.DateEnd).ToShortDateString()) : "null") +
+                    $"{item.Type} - {item.TeacherRank} - {item.Teacher} - " +
+                    $"{item.Classroom}");
             }
             //cleanup
             GC.Collect();
@@ -68,11 +83,8 @@ namespace VkSchelude
         {
             if (DataString.Length < 10) return null;
             List<LessonInfo> result = new List<LessonInfo>();
-            //List<LessonInfo> localResult
             if (DataString.Contains('\n'))
             {
-                //foreach (string partData in DataString.Split('\n'))
-                //{
                 for (int i = 0; i < DataString.Split('\n').Count(); i++)
                 {
                     string partData = DataString.Split('\n')[i];
@@ -81,7 +93,6 @@ namespace VkSchelude
                         Hall = Hall.Replace("\nсмен.об.", "");
                     }
                     result.AddRange(ParseItemRow(partData, Day, Number, Hall.Split('\n')[i], Merged, MergedAddress = null));
-                    //return result; // проверить
                 }
                 return result;
             }
@@ -98,52 +109,86 @@ namespace VkSchelude
                     LessonInfo currentItem = new LessonInfo();
                     currentItem.DateStart = DateTime.Parse(bb[0].Value);
                     currentItem.DateEnd = DateTime.Parse(bb[1].Value);
-                    string type = Regex.Matches(itemsFromTo.Captures[0].Value, @"г.-[\,,\.,а-я,А-Я]+")[0]
+                    string type = Regex.Matches(itemsFromTo.Captures[0].Value, patternLesson)[0]
                         .Value
                         .Replace("г.-", "");
-                    while (Regex.IsMatch(type, patternTrash + @"$")) // обрезаем мусор в конце
-                    {
-                        type = type.Substring(0, type.Length - 1);
-                    }
-                    while (Regex.IsMatch(type, "^" + patternTrash)) // обрезаем мусор в начале
-                    {
-                        type = type.Substring(1);
-                    }
+                    type = ClearTrim(type);
                     currentItem.Type = type;
-                    currentItem.Lesson = DataString.Split(';')[0];
                     dates = dates.Replace(itemsFromTo.Captures[0].Value, "");
                     itemsFromTo = Regex.Match(dates, patternFromTo);
                     result.Add(currentItem);
                 }
                 #endregion
-                #region
+                #region---Проверка дат в привычном формате
                 itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
                 while (itemsFromTo.Captures.Count > 0)
                 {
                     //парсинг остальных форматов записи даты
-                    dates = dates.Replace(itemsFromTo.Captures[0].Value, "");
+                    var bb = Regex.Matches(itemsFromTo.Captures[0].Value, patternSingleDate);
+                    string foundDate = bb[0].Value;
+                    LessonInfo currentItem = new LessonInfo();
+                    currentItem.DateStart = DateTime.Parse(foundDate);
+                    currentItem.DateEnd = DateTime.Parse(foundDate);
+                    string type = Regex.Matches(itemsFromTo.Captures[0].Value, patternLesson)[0]
+                        .Value
+                        .Replace("г.-", "");
+                    type = ClearTrim(type);
+                    dates = dates.Replace(foundDate, foundDate.Substring(foundDate.IndexOf('.')));
+                    dates = dates.Replace(",.", ".");
                     itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
+                    if(itemsFromTo.Captures.Count == 0)
+                    {
+                        var bb1 = Regex.Match(dates, patternHardDate);
+                        if (bb1.Captures.Count > 0)
+                        {
+                            string problemDate = bb1.Captures[0].Value;
+                            if (bb1.Captures.Count > 0)
+                            {
+                                string excessText = problemDate.Substring(problemDate.IndexOf(';'), problemDate.Length - bb1.Captures[0].Value.LastIndexOf('.') + 1);
+                                dates = dates.Replace(excessText, "");
+                                itemsFromTo = Regex.Match(dates, patternMultiDate + patternLesson);
+                                // обрезать лишнее
+                            }
+                        }
+                    }
+                    currentItem.Type = type;
+                    result.Add(currentItem);
                 }
                 #endregion
             }
             else
             {
-                result.Add(new LessonInfo
-                {
-                    Lesson = DataString.Split(';')[0]
-                }
-                );
+                result.Add(new LessonInfo { Lesson = DataString.Split(';')[0] });
             }
             foreach (var item in result)
             {
-                item.Day = Day;
-                item.Teacher = teacher;
+                item.Lesson = DataString.Split(';')[0];
+                item.Day = ClearTrim(Day);
+                if (Regex.Matches(teacher, patternTeacher).Count > 0)
+                {
+                    item.Teacher = Regex.Matches(teacher, patternTeacher)[0].Value;
+                    item.TeacherRank = ClearTrim(teacher.Replace(item.Teacher, ""));
+                }
+                else
+                {
+                    item.Teacher = teacher.Trim();
+                }
                 item.Number = Number;
-                item.Classroom = Hall;
+                item.Classroom = ClearTrim(Hall);
             }
-
-            Console.WriteLine($"{Day} - {DataString}");
             return result;
+        }
+        private string ClearTrim(string input)
+        {
+            while (Regex.IsMatch(input, patternTrash + @"$")) // обрезаем мусор в конце
+            {
+                input = input.Substring(0, input.Length - 1);
+            }
+            while (Regex.IsMatch(input, "^" + patternTrash)) // обрезаем мусор в начале
+            {
+                input = input.Substring(1);
+            }
+            return input.Replace('\n', ' ');
         }
     }
 }
