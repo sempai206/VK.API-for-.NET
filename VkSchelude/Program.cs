@@ -46,7 +46,7 @@ namespace VkSchelude
                     {
                         string fname = command.Substring(command.IndexOf("/filename") + "/filename".Length).Trim();
                         fname = fname.Substring(0, fname.IndexOf(' ') != -1 ? fname.IndexOf(' ') : fname.Length);
-                        if (!Regex.IsMatch(fname, "[*\\|:<>?/\"]"))
+                        if (!Regex.IsMatch(fname, "[*\\|:<>?/\" ]"))
                         {
                             path = "\\" + fname;
                         }

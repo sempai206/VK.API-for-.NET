@@ -17,5 +17,6 @@ namespace VkSchelude.Types
         public string Type { get; set; }
         public string Teacher { get; set; }
         public string TeacherRank { get; set; }
+        public string Group { get; set; }
     }
 }
