@@ -21,7 +21,7 @@ namespace VkSchelude
         private static bool _working = true;
         static void Main(string[] args)
         {
-            Authorize.setAuthorize();
+            Authorize.Auth();
             //Thread tomorrowScheludeThread = new Thread(Schedule.Start);
             //tomorrowScheludeThread.Start();
             Thread vkBotThread = new Thread(groupBot.Start);
@@ -31,11 +31,16 @@ namespace VkSchelude
                 var command = Console.ReadLine();
                 if (command.Equals("schedule"))
                 {
-                    //Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString());
-                    Send.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")));
+                    var message = Schedule.buildSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy"));
+                    if (message != String.Empty)
+                        Send.SendOnWall(Authorize.vkUser, message);
                 }
                 else if (command.Equals("schedule today"))
-                    Send.SendOnWall(Authorize.vkUser, Schedule.buildSchedule(DateTime.Now.Date.ToString("dd.MM.yyyy")));
+                {
+                    var message = Schedule.buildSchedule(DateTime.Now.Date.ToString("dd.MM.yyyy"));
+                    if (message != String.Empty)
+                        Send.SendOnWall(Authorize.vkUser, message);
+                }
                 else if (Regex.IsMatch(command, "^parse"))
                 {
                     bool plusConsole = false;
@@ -55,7 +60,9 @@ namespace VkSchelude
                             Console.WriteLine("Ошибка: значение поля /filename определяется относительно папки рабочего стола текущего пользователя");
                         }
                     }
-                    new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path);
+                    vkBotThread.Suspend();
+                    Db.FillTableLessons(new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path));
+                    vkBotThread.Resume();
                 }
             }
         }

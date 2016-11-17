@@ -14,33 +14,33 @@ namespace VkSchelude.Utils
         {
             if (message == String.Empty)
                 return;
-            long groupId = -128223029;
+            
             var postIdSchedule = vk.Wall.Post(new WallPostParams
             {
-                OwnerId = groupId,
+                OwnerId = Authorize.groupId,
                 FriendsOnly = false,
                 FromGroup = true,
                 Message = message
             });
             if (postIdSchedule != 0)
-                Log.Logging(String.Format("{0} - Расписание на {1} успешно размещено", DateTime.Now, DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")));
+                Log.Logging($"Расписание на {DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")} успешно размещено");
             else
-                Log.Logging(String.Format("{0} - Ошибка!Расписание на {1} не было размещено", DateTime.Now, DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")));
+                Log.Logging($"Ошибка!Расписание на {DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")} не было размещено");
         }
         public static void SendInMessages(VkApi vk, string message, long? userId)
         {
             if (message == String.Empty)
                 return;
-            var userInfo = vk.Users.Get((long)userId);
+            var userInfo = Authorize.vkUser.Users.Get((long)userId);
             var postId = vk.Messages.Send(new MessagesSendParams
             {
                 UserId = userId,
                 Message = message,
             });
             if (postId != 0)
-                Log.Logging(String.Format("{0} - Сообщение пользователю {1} успешно отправлено", DateTime.Now, userInfo.FirstName + " " + userInfo.LastName));
+                Log.Logging($"Сообщение пользователю {userInfo.FirstName + " " + userInfo.LastName} успешно отправлено");
             else
-                Log.Logging(String.Format("{0} - Ошибка!Сообщение пользователю {1} не было отправлено", DateTime.Now, userInfo.FirstName + " " + userInfo.LastName));
+                Log.Logging($"Ошибка!Сообщение пользователю {userInfo.FirstName + " " + userInfo.LastName} не было отправлено");
         }
     }
 }

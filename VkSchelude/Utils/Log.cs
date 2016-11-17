@@ -11,8 +11,8 @@ namespace VkSchelude.Utils
     {
         public static void Logging(string message)
         {
-            Console.WriteLine(message);
-            File.AppendAllText("Log.txt", message + Environment.NewLine);
+            Console.WriteLine($"{DateTime.Now} - {message}");
+            File.AppendAllText("Log.txt", $"{DateTime.Now} - {message}{Environment.NewLine}");
         }
     }
 }
