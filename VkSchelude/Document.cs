@@ -15,7 +15,7 @@ namespace VkSchelude
         private string patternSingleDate = @"\d{1,2}\.\d{1,2}\.\d{1,2}";
         private string patternTrash = @"([-,\,,\.,\s])";
         private string patternFromTo = @"с \d{1,2}\.\d{1,2}\.\d{1,2} {0,1}г\. по \d{1,2}\.\d{1,2}\.\d{1,2} {0,1}г\.-[а-я,А-я,\,,\.,ё]+";
-        private string patternLesson = @"г.-[\,,\.,а-я,А-Я,ё]+";
+        private string patternLesson = @" {0,1}г.-[\,,\.,а-я,А-Я,ё]+";
         private string patternMultiDate = @"(\d{1,2}\,){0,}\d{1,2}\.\d{1,2}\.\d{1,2}";
         private string patternHardDate = @"\d{1,2}\.\d{1,2};\.\d{1,2}\.\d{1,2}";
         private string patternTeacher = @"[А-Я,а-я,ё,Ё]+\.[А-Я,а-я,ё,Ё]{1}\.";
