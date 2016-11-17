@@ -72,7 +72,6 @@ namespace VkSchelude
             else
                 connection = new SqlConnection(authData["connectionString"]);
         }
-
         private static Dictionary<string, string> getAuthData()
         {
             if (!File.Exists("authData.txt"))
