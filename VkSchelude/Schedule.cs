@@ -22,7 +22,7 @@ namespace VkSchelude
         {
             while (true)
             {
-                if (DateTime.Now.Hour == 20)
+                if (DateTime.Now.Hour == 20 && CheckWallForSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")))
                 {
                     Send.SendOnWall(Authorize.vkUser, buildSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")));
                 }
@@ -31,57 +31,57 @@ namespace VkSchelude
         }
         public static string buildSchedule(string date)
         {
-            if (DateTime.Parse(date).DayOfWeek == DayOfWeek.Sunday)
+            List<LessonInfo> schedule = getSchedule(date);
+            if (schedule.Count == 0)
                 return String.Empty;
-            var message = String.Empty;
-            List<LessonInfo> schedule = new List<LessonInfo>();
-            schedule.Add(new LessonInfo()
-            {
-                Lesson = "Теория трансляции",
-                Number = 2,
-                Classroom = "УК.1",
-                Teacher = "Сивков"
-            });
-            schedule.Add(new LessonInfo()
-            {
-                Lesson = "Теория трансляции",
-                Number = 3,
-                Classroom = "УК.1",
-                Teacher = "Сивков"
-            });
-            schedule.Add(new LessonInfo()
-            {
-                Lesson = "Беспроводные технологии",
-                Number = 4,
-                Classroom = "УК.3",
-                Teacher = "Денисов"
-            });
-            //List<LessonInfo> schedule = getSchedule(date); //нужно отсортировать по последовательности пар
-            message += String.Format("Расписание на {0}:\n", date);
+            var message = $"Расписание на {date}:\n";
             foreach (var item in schedule)
             {
-                message += String.Format("{0} пара: {1}, преподаватель {2}, ауд. {3}\n", item.Number, item.Lesson, item.Teacher, item.Classroom);
+                message += $"{item.Number} пара: {item.Lesson} - {item.Type}, преподаватель {item.Teacher}, ауд. {item.Classroom}\n";
             }
             return message;
         }
         private static List<LessonInfo> getSchedule(string date)
         {
-            var connectionString = ""; //строка подключения
-            var selectSchedule = ""; //здесь будет строка запроса расписания из базы
-            var connection = new SqlConnection(connectionString);
-            var cmdSchedule = new SqlCommand(selectSchedule, connection);
-            connection.Open();
-            var reader = cmdSchedule.ExecuteReader();
+            var selectSchedule = "SELECT Lessons.Number, Lessons.TypeOfLesson, Lessons.Classroom, NamesOfLessons.Title AS Lesson, Teachers.Title AS Teacher " +
+                                 "FROM Lessons INNER JOIN " +
+                                    "Teachers ON Lessons.TeacherId = Teachers.Id INNER JOIN " +
+                                    "NamesOfLessons ON Lessons.LessonNameId = NamesOfLessons.Id " +
+                                 $"WHERE DateFrom <= CONVERT(date, '{date}', 104) AND DateTo >= CONVERT(date, '{date}', 104) AND Lessons.DayOfWeek = {(int)DateTime.Parse(date).DayOfWeek} " + 
+                                 "ORDER BY Number";
+            Authorize.connection.Open();
+            var reader = new SqlCommand(selectSchedule, Authorize.connection).ExecuteReader();
             List<LessonInfo> result = new List<LessonInfo>();
             while (reader.Read())
             {
                 var lesson = new LessonInfo();
-                //здесь будет заполнение объекта класса Schedule
+                lesson.Lesson = reader["Lesson"].ToString();
+                lesson.Type = reader["TypeOfLesson"].ToString();
+                lesson.Number = int.Parse(reader["Number"].ToString());
+                lesson.Teacher = reader["Teacher"].ToString();
+                lesson.Classroom = reader["Classroom"].ToString();
                 result.Add(lesson);
             }
             reader.Close();
-            connection.Close();
+            Authorize.connection.Close();
             return result;
+        }
+        public static bool CheckWallForSchedule(string date)
+        {
+            var wallPosts = Authorize.vkUser.Wall.Get(new WallGetParams
+            {
+                OwnerId = Authorize.groupId,
+                Count = 20,
+                Filter = VkNet.Enums.SafetyEnums.WallFilter.Owner,
+            });
+            foreach (var post in wallPosts.WallPosts)
+            {
+                if (post.Text.Contains($"Расписание на {date}"))
+                {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

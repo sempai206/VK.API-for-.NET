@@ -27,20 +27,21 @@ namespace VkSchelude
                     {
                         if (dialog.Body.Contains("&"))
                         {
-                            switch (dialog.Body)
+                            if (dialog.Body.Contains("&расписание"))
                             {
-                                case "&Расписание на завтра":
-                                    Send.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.AddDays(1).ToString("dd.MM.yyyy")), dialog.UserId);
-                                    break;
-
-                                case "&test":
-                                    Send.SendInMessages(Authorize.vkGroup, Schedule.buildSchedule(DateTime.Now.ToString("dd.MM.yyyy")), dialog.UserId);
-                                    break;
+                                var dates = dialog.Body.Replace("&расписание", "").Trim();
+                                var parsedDates = dates.Split(',').ToList();
+                                foreach (var date in parsedDates)
+                                {
+                                    var message = Schedule.buildSchedule(date);
+                                    if (message != String.Empty)
+                                        Send.SendInMessages(Authorize.vkGroup, message, dialog.UserId);
+                                }
                             }
                         }
                     }
                 }
-                Thread.Sleep(1000);
+                Thread.Sleep(10000);
             }
         }
     }
