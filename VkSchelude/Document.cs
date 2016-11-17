@@ -172,7 +172,7 @@ namespace VkSchelude
             }
             foreach (var item in result)
             {
-                item.Lesson = DataString.Split(';')[0];
+                item.Lesson = DataString.Split(';')[0].Trim();
                 item.Day = ClearTrim(Day);
                 if (Regex.Matches(teacher, patternTeacher).Count > 0)
                 {
