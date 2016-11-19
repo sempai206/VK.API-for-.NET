@@ -14,7 +14,7 @@ namespace VkSchelude
 {
     class groupBot
     {
-        private string patternStart = @"^!";
+        private static string patternStart = @"^!";
         public static void Start()
         {
             while (true)
@@ -28,19 +28,41 @@ namespace VkSchelude
                 {
                     foreach (var dialog in dialogs.Messages)
                     {
-                        if (Regex.IsMatch(dialog.Body, @"^!"))
+                        if (Regex.IsMatch(dialog.Body, patternStart))
                         {
+                            #region--Подготовка к работе
+                            string inputMessageText = dialog.Body;
                             if (Authorize.connection.State != System.Data.ConnectionState.Open)
                                 Authorize.connection.Open();
                             string selectRights = DBHelper.GetInternalSQLRequest(1);
                             int currentRightsId = int.Parse(DBHelper.GetSingleObject(selectRights, new Dictionary<string, object> { { "@UserId", dialog.UserId } }).ToString());
-                            selectRights = DBHelper.GetInternalSQLRequest(5);
-                            var aa = DBHelper.GetDictionary(selectRights, new Dictionary<string, object> { { "@CurrentRightsId", currentRightsId } });
+                            string getHelperQuery = DBHelper.GetInternalSQLRequest(5);
                             string outString = String.Empty;
-                            foreach(var item in aa)
+                            var listHelper = DBHelper.GetListObject(getHelperQuery, new Dictionary<string, object> { { "@CurrentRightsId", currentRightsId } });
+                            if (inputMessageText.Contains('|'))
+                                inputMessageText = inputMessageText.Substring(0, inputMessageText.IndexOf('|'));
+                            inputMessageText = inputMessageText.Trim();
+                            if (Regex.IsMatch(inputMessageText, patternStart + "[" + String.Join("|",listHelper.Select(i => i["CommandName"])) + "]{1}"))
                             {
-                                outString += $"!{item.Key} - {item.Value}\n";
+                                List<string> partsOfMessage = inputMessageText.Split(' ').ToList();
+                                for(int i = 1; i < partsOfMessage.Count; i++)
+                                {
+                                    //if (Regex.IsMatch(partsOfMessage, ""))
+                                    {
+
+                                    }
+                                }
                             }
+                            #endregion
+                            #region !помощь
+                            //if (Regex.IsMatch(dialog.Body, patternStart))
+                            //{
+                            //    foreach (var itemHelper in listHelper)
+                            //    {
+                            //        outString += $"!{itemHelper.Key} - {itemHelper.Value}\n";
+                            //    }
+                            //}
+                            #endregion
                             if (!String.IsNullOrEmpty(outString))
                                 Send.SendInMessages(Authorize.vkGroup, outString, dialog.UserId);
                         }
