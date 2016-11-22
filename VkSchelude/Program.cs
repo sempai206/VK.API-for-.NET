@@ -61,8 +61,8 @@ namespace VkSchelude
                         }
                     }
                     vkBotThread.Suspend();
-                    new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path);
-                    //Db.FillTableLessons(new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path));
+                    //new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path);
+                    Db.FillTableLessons(new Document(plusConsole).Parse(Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + path));
                     vkBotThread.Resume();
                 }
             }

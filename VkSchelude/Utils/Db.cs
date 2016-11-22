@@ -15,7 +15,7 @@ namespace VkSchelude.Utils
             FillTeachers(parsedLessons);
             FillNamesOfLessons(parsedLessons);
             Authorize.connection.Open();
-            new SqlCommand("UPDATE tbl_Lessons SET isActive = 0").ExecuteNonQuery();
+            new SqlCommand("UPDATE tbl_Lessons SET isActive = 0", Authorize.connection).ExecuteNonQuery();
             Authorize.connection.Close();
             foreach (var lesson in parsedLessons)
             {
