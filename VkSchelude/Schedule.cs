@@ -49,7 +49,7 @@ namespace VkSchelude
                                     "NamesOfLessons ON Lessons.LessonNameId = NamesOfLessons.Id " +
                                  $"WHERE DateFrom <= CONVERT(date, '{date}', 104) AND DateTo >= CONVERT(date, '{date}', 104) AND Lessons.DayOfWeek = {(int)DateTime.Parse(date).DayOfWeek} " + 
                                  "ORDER BY Number";
-            Authorize.connection.Open();
+            //Authorize.connection.Open();
             var reader = new SqlCommand(selectSchedule, Authorize.connection).ExecuteReader();
             List<LessonInfo> result = new List<LessonInfo>();
             while (reader.Read())
@@ -63,7 +63,7 @@ namespace VkSchelude
                 result.Add(lesson);
             }
             reader.Close();
-            Authorize.connection.Close();
+            //Authorize.connection.Close();
             return result;
         }
         public static bool CheckWallForSchedule(string date)

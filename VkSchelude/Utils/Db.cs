@@ -14,9 +14,9 @@ namespace VkSchelude.Utils
         {
             FillTeachers(parsedLessons);
             FillNamesOfLessons(parsedLessons);
-            Authorize.connection.Open();
+            //Authorize.connection.Open();
             new SqlCommand("UPDATE tbl_Lessons SET isActive = 0", Authorize.connection).ExecuteNonQuery();
-            Authorize.connection.Close();
+            //Authorize.connection.Close();
             foreach (var lesson in parsedLessons)
             {
                 if (lesson.DateStart == null || lesson.DateEnd == null)
@@ -25,67 +25,75 @@ namespace VkSchelude.Utils
                     "(DateFrom, DateTo, Number, TypeOfLesson, Classroom, DayOfWeek, TeacherId, LessonNameId) " +
                     "VALUES " +
                     $"(CONVERT(date, '{lesson.DateStart.Value.Date.ToString("dd.MM.yyyy")}', 104), CONVERT(date, '{lesson.DateEnd.Value.Date.ToString("dd.MM.yyyy")}', 104), {lesson.Number}, '{lesson.Type}', '{lesson.Classroom}', '{GetIdByTitle(lesson.Day, "ref_DaysOfWeek")}', {GetIdByTitle(lesson.Teacher.Trim(), "tbl_Teachers")}, {GetIdByTitle(lesson.Lesson.Trim(), "ref_NamesOfLessons")})";
-                Authorize.connection.Open();
+                //Authorize.connection.Open();
                 new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
-                Authorize.connection.Close();
+                //Authorize.connection.Close();
             }
             Log.Logging("Расписание успешно занесено в БД");
         }
         private static int GetIdByTitle(string title, string table)
         {
-            Authorize.connection.Open();
+            //Authorize.connection.Open();
             var id = new SqlCommand($"SELECT Id FROM {table} WHERE Title = '{title}'", Authorize.connection).ExecuteScalar();
-            Authorize.connection.Close();
+            //Authorize.connection.Close();
             return (int)id;
         }
         private static void FillTeachers(List<LessonInfo> parsedLessons)
         {
-            Authorize.connection.Open();
+            //Authorize.connection.Open();
             var teachersList = new List<string>();
             var reader = new SqlCommand("SELECT * FROM tbl_Teachers", Authorize.connection).ExecuteReader();
             while (reader.Read())
             {
                 teachersList.Add(reader["Title"].ToString());
             }
-            Authorize.connection.Close();
+            reader.Close();
+            //Authorize.connection.Close();
             var uniqueTeachers = new List<string>();
             foreach (var lesson in parsedLessons)
-                if (!teachersList.Contains(lesson.Teacher))
+                if (!uniqueTeachers.Contains(lesson.Teacher))
                     uniqueTeachers.Add(lesson.Teacher);
             foreach (var teacher in uniqueTeachers)
             {
-                var insertCommand = "INSERT INTO tbl_Teachers " +
+                if (!teachersList.Contains(teacher))
+                {
+                    var insertCommand = "INSERT INTO tbl_Teachers " +
                     "(Title) " +
                     "VALUES " +
                     $"('{teacher}')";
-                Authorize.connection.Open();
-                new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
-                Authorize.connection.Close();
+                    //Authorize.connection.Open();
+                    new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
+                }
+                //Authorize.connection.Close();
             }
         }
         private static void FillNamesOfLessons(List<LessonInfo> parsedLessons)
         {
-            Authorize.connection.Open();
+            //Authorize.connection.Open();
             var namesOfLessonsList = new List<string>();
             var reader = new SqlCommand("SELECT * FROM ref_NamesOfLessons", Authorize.connection).ExecuteReader();
             while (reader.Read())
             {
                 namesOfLessonsList.Add(reader["Title"].ToString());
             }
-            Authorize.connection.Close();
-            var uniqueTeachers = new List<string>();
+            reader.Close();
+            //Authorize.connection.Close();
+            var uniqueNamesOfLessons = new List<string>();
             foreach (var lesson in parsedLessons)
-                if (!namesOfLessonsList.Contains(lesson.Teacher))
-                    uniqueTeachers.Add(lesson.Teacher);
-            foreach (var teacher in uniqueTeachers)
+                if (!namesOfLessonsList.Contains(lesson.Lesson))
+                    uniqueNamesOfLessons.Add(lesson.Lesson);
+            foreach (var lesson in uniqueNamesOfLessons)
             {
-                var insertCommand = "INSERT INTO tbl_Teachers " +
+                if (!namesOfLessonsList.Contains(lesson))
+                {
+                    var insertCommand = "INSERT INTO ref_NamesOfLessons " +
                     "(Title) " +
                     "VALUES " +
-                    $"('{teacher}')";
-                Authorize.connection.Open();
-                new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
-                Authorize.connection.Close();
+                    $"('{lesson}')";
+                    //Authorize.connection.Open();
+                    new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
+                    //Authorize.connection.Close();
+                }
             }
         }
     }

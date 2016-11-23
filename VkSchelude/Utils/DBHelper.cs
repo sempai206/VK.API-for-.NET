@@ -63,6 +63,7 @@ namespace VkSchelude.Utils
                     }
                 //result.Add(reader.GetValue(0));
             }
+            reader.Close();
             return result;
         }
         public static List<DCustom> GetListObject(string Request, Dictionary<string, object> Parameters = null)
