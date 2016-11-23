@@ -40,6 +40,7 @@ namespace VkSchelude.Utils
         }
         private static void FillTeachers(List<LessonInfo> parsedLessons)
         {
+            if (Authorize.connection.State != System.Data.ConnectionState.Open)
             Authorize.connection.Open();
             var teachersList = new List<string>();
             var reader = new SqlCommand("SELECT * FROM tbl_Teachers", Authorize.connection).ExecuteReader();

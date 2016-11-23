@@ -63,6 +63,7 @@ namespace VkSchelude.Utils
                     }
                 //result.Add(reader.GetValue(0));
             }
+            reader.Close();
             return result;
         }
         public static List<DCustom> GetListObject(string Request, Dictionary<string, object> Parameters = null)
@@ -85,6 +86,7 @@ namespace VkSchelude.Utils
                         newItem[reader.GetName(i)] = reader.GetValue(i);
                 result.Add(newItem);
             }
+            reader.Close();
             return result;
         }
         public static List<object> GetList(string Request, Dictionary<string, object> Parameters = null)
@@ -104,6 +106,7 @@ namespace VkSchelude.Utils
             {
                 result.Add(reader.GetValue(0));
             }
+            reader.Close();
             return result;
         }
         public static Dictionary<object, object> GetDictionary(string Request, Dictionary<string, object> Parameters = null)
@@ -123,6 +126,7 @@ namespace VkSchelude.Utils
             {
                 result.Add(reader.GetValue(0), reader.GetValue(1));
             }
+            reader.Close();
             return result;
         }
     }
