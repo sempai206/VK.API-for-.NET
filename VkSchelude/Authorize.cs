@@ -70,7 +70,11 @@ namespace VkSchelude
             if (!authData.ContainsKey("connectionString"))
                 Log.Logging("Подключение к БД невозможно, так как в файле authData.txt не найдена строка подключения(connectionString)");
             else
+            {
                 connection = new SqlConnection(authData["connectionString"]);
+                Authorize.connection.Open();
+            }
+                
         }
         private static Dictionary<string, string> getAuthData()
         {
