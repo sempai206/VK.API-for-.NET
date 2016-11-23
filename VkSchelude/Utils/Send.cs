@@ -14,7 +14,6 @@ namespace VkSchelude.Utils
         {
             if (message == String.Empty)
                 return;
-            
             var postIdSchedule = vk.Wall.Post(new WallPostParams
             {
                 OwnerId = Authorize.groupId,
@@ -32,11 +31,23 @@ namespace VkSchelude.Utils
             if (message == String.Empty)
                 return;
             var userInfo = Authorize.vkUser.Users.Get((long)userId);
-            var postId = vk.Messages.Send(new MessagesSendParams
+            long postId = 0;
+            try
             {
-                UserId = userId,
-                Message = message,
-            });
+                postId = vk.Messages.Send(new MessagesSendParams
+                {
+                    UserId = userId,
+                    Message = message,
+                });
+            }
+            catch
+            {
+                postId = vk.Messages.Send(new MessagesSendParams
+                {
+                    UserId = userId,
+                    Message = "ОШИБКА: Превышен интервал запроса. Попробуйте позже.",
+                });
+            }
             if (postId != 0)
                 Log.Logging($"Сообщение пользователю {userInfo.FirstName + " " + userInfo.LastName} успешно отправлено");
             else

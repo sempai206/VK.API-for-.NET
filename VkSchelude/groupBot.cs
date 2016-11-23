@@ -44,6 +44,7 @@ namespace VkSchelude
                             inputMessageText = inputMessageText.Trim();
                             if (Regex.IsMatch(inputMessageText, patternStart + "(?>" + String.Join("|", listHelper.Select(i => i["Title"])) + "){1}"))
                             {
+                                DateTime tryparse = new DateTime();
                                 var itemMainCommand = DBHelper.GetObject("SELECT * FROM tbl_Helper WHERE Title LIKE '" +
                                     (Regex.Match(inputMessageText, patternStart + "(?>" + String.Join("|", listHelper.Select(i => i["Title"])) + "){1}")).Value.Substring(1)
                                     + "'");
@@ -54,19 +55,27 @@ namespace VkSchelude
                                     { "@CurrentRightsId", currentRightsId },
                                     { "@CommandTitle", (Regex.Match(inputMessageText, patternStart + "(?>" + String.Join("|",listHelper.Select(i => i["Title"])) + "){1}")).Captures[0].Value.Substring(1) }
                                 });
+                                #region---Команда без аргументов
                                 if (partsOfMessage.Count == 1)
                                 {
                                     if (!(bool)itemMainCommand["NeedOverload"])
                                     {
                                         if (itemMainCommand["Title"].ToString().Equals("расписание"))
                                         {
+                                            tryparse = DateTime.Now.AddDays(1);
+                                            itemMainCommand.Id = 2;
                                             Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
                                                 new Dictionary<string, object>
                                                 {
                                                 {"@Date", DateTime.Now.AddDays(1) },
                                                 {"@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek }
                                                 });
-                                            outString = GetAnswerString(2, Responce, DateTime.Now.AddDays(1)); // 2 потому что id расписания
+                                            //outString = GetAnswerString(2, Responce, tryparse); // 2 потому что id расписания
+                                        }
+                                        if (itemMainCommand["Title"].ToString().Equals("преподы"))
+                                        {
+                                            itemMainCommand.Id = 6;
+                                            Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " WHERE IsReal = 1 ORDER BY FullName");
                                         }
                                     }
                                     else
@@ -74,11 +83,13 @@ namespace VkSchelude
                                         throw new Exception();
                                     }
                                 }
+                                #endregion
+                                #region---Команда с аргументом, без перегрузок
                                 else if (partsOfMessage.Count == 2)
                                 {
                                     if (itemMainCommand["Title"].ToString().Equals("расписание"))
                                     {
-                                        DateTime tryparse = new DateTime();
+                                        itemMainCommand.Id = 2;
                                         if (DateTime.TryParse(partsOfMessage[1], out tryparse))
                                         {
                                             Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
@@ -87,12 +98,20 @@ namespace VkSchelude
                                                 {"@Date", DateTime.Parse(partsOfMessage[1]) },
                                                 {"@DayOfWeek", DateTime.Parse(partsOfMessage[1]).DayOfWeek }
                                                 });
-                                            outString = GetAnswerString(2, Responce, DateTime.Parse(partsOfMessage[1])); // 2 потому что id расписания
+                                            //outString = GetAnswerString(itemMainCommand.Id, Responce, tryparse); // 2 потому что id расписания
                                         }
                                         else
                                             outString = "Входная строка имела неверный формат";
                                     }
+                                    if (itemMainCommand["Title"].ToString().Equals("преподы"))
+                                    {
+                                        itemMainCommand.Id = 6;
+                                        Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
+                                            new Dictionary<string, object> { { "@FName", partsOfMessage[1]+"%"} });
+                                    }
                                 }
+                                #endregion
+                                #region---Команда с перегрузками, без аргументов
                                 else
                                     for (int i = 1; i < partsOfMessage.Count; i++)
                                     {
@@ -101,36 +120,19 @@ namespace VkSchelude
 
                                         }
                                     }
+                                #endregion
+                                outString = Helper.GetAnswerString(itemMainCommand.Id, Responce, tryparse); // 2 потому что id расписания
                             }
                             #endregion
-                            // тут обработать - записывать в outstring то, что высчиталось выше
+                            
                             if (String.IsNullOrEmpty(outString))
                                 outString = "Запрос не дал результатов";
                             Send.SendInMessages(Authorize.vkGroup, outString, dialog.UserId);
                         }
                     }
                 }
-                Thread.Sleep(10000);
+                Thread.Sleep(5000);
             }
-        }
-        private static string GetAnswerString(int modelId, List<DCustom> inputData, DateTime? lessonsDate = null)
-        {
-            string answerString = "Запрос не дал результатов";
-            switch (modelId)
-            {
-                case 2: // расписание
-                    answerString = String.Empty;
-                    if (inputData.Count == 0)
-                        answerString = $"На указанный день ({((DateTime)lessonsDate).ToShortDateString()}) занятий не найдено";
-                    else
-                        answerString = $"Расписание на {((DateTime)lessonsDate).ToShortDateString()} ({inputData.First()["DayOfWeek"]}):\n";
-                    foreach(var item in inputData)
-                    {
-                        answerString += $"{item["Number"]} - {item["NameOfLesson"]} ({item["TypeOfLesson"]}) - {item["TeacherName"]} ({item["Classroom"]})\n";
-                    }
-                    break;
-            }
-            return answerString;
         }
     }
 }

@@ -92,6 +92,7 @@
     <Compile Include="Types\LessonInfo.cs" />
     <Compile Include="Utils\Db.cs" />
     <Compile Include="Utils\DBHelper.cs" />
+    <Compile Include="Utils\Helper.cs" />
     <Compile Include="Utils\Log.cs" />
     <Compile Include="Utils\Send.cs" />
   </ItemGroup>
