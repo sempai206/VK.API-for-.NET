@@ -59,7 +59,7 @@ namespace VkSchelude.Utils
                     }
                     catch (Exception ex)
                     {
-                        throw new Exception(); // 
+                        throw new Exception(ex.Message); // 
                     }
                 //result.Add(reader.GetValue(0));
             }
@@ -129,5 +129,84 @@ namespace VkSchelude.Utils
             reader.Close();
             return result;
         }
+        #region Заполнения таблиц
+        /// <summary>
+        /// Заполняет таблицы в БД
+        /// </summary>
+        /// <param name="parsedLessons">Лист с распарсенным расписанием</param>
+        public static void FillTables(List<LessonInfo> parsedLessons)
+        {
+            FillTeachers(parsedLessons);
+            FillNamesOfLessons(parsedLessons);
+            new SqlCommand(DBHelper.GetInternalSQLRequest(9), Authorize.connection).ExecuteNonQuery();
+            foreach (var lesson in parsedLessons)
+            {
+                if (lesson.DateStart == null || lesson.DateEnd == null)
+                    continue;
+                var request = DBHelper.GetInternalSQLRequest(14);
+                request = request.Replace("@DateStart", $"{lesson.DateStart.Value.Date}");
+                request = request.Replace("@DateEnd", $"{lesson.DateEnd.Value.Date}");
+                request = request.Replace("@Number", $"{lesson.Number}");
+                request = request.Replace("@TypeOfLesson", $"{lesson.Type}");
+                request = request.Replace("@Classroom", $"{lesson.Classroom}");
+                request = request.Replace("@DayOfWeek", $"{GetIdByTitle(lesson.Day.Trim(), "ref_DaysOfWeek").ToString()}");
+                request = request.Replace("@TeacherId", $"{GetIdByTitle(lesson.Teacher.Trim(), "tbl_Teachers")}");
+                request = request.Replace("@LessonNameId", $"{GetIdByTitle(lesson.Lesson.Trim(), "ref_NamesOfLessons")}");
+                new SqlCommand(request, Authorize.connection).ExecuteNonQuery();
+            }
+            Log.Logging("Расписание успешно занесено в БД");
+        }
+        /// <summary>
+        /// Получает ID из таблицы по заданному наименованию
+        /// </summary>
+        /// <param name="title">Наименование</param>
+        /// <param name="table">Таблица</param>
+        /// <returns></returns>
+        private static int GetIdByTitle(string title, string table)
+        {
+            var request = DBHelper.GetInternalSQLRequest(10);
+            request = request.Replace("@Table", table);
+            request = request.Replace("@Title", title);
+            return (int)DBHelper.GetObject(request)["Id"];
+        }
+        private static void FillTeachers(List<LessonInfo> parsedLessons)
+        {
+            if (Authorize.connection.State != System.Data.ConnectionState.Open)
+                Authorize.connection.Open();
+            var teachersList = DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(8).Replace("@Table", "tbl_Teachers"));
+            var uniqueTeachers = new List<string>();
+            foreach (var lesson in parsedLessons)
+                if (!uniqueTeachers.Contains(lesson.Teacher))
+                    uniqueTeachers.Add(lesson.Teacher);
+            foreach (var teacher in uniqueTeachers)
+            {
+                if (!teachersList.Any(i => i["Title"].ToString() == teacher))
+                {
+                    var request = DBHelper.GetInternalSQLRequest(12);
+                    request = request.Replace("@Table", "tbl_Teachers");
+                    request = request.Replace("@Value", teacher);
+                    new SqlCommand(request, Authorize.connection).ExecuteNonQuery();
+                }
+            }
+        }
+        private static void FillNamesOfLessons(List<LessonInfo> parsedLessons)
+        {
+            var namesOfLessonsList = DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(8).Replace("@Table", "ref_NamesOfLessons"));
+            var uniqueNamesOfLessons = new List<string>();
+            foreach (var lesson in parsedLessons)
+                if (!uniqueNamesOfLessons.Contains(lesson.Lesson))
+                    uniqueNamesOfLessons.Add(lesson.Lesson);
+            foreach (var lesson in uniqueNamesOfLessons)
+            {
+                if (!namesOfLessonsList.Any(i => i["Title"].ToString() == lesson))
+                {
+                    var request = DBHelper.GetInternalSQLRequest(12);
+                    request = request.Replace("@Table", "ref_NamesOfLessons");
+                    request = request.Replace("@Value", lesson);
+                    new SqlCommand(request, Authorize.connection).ExecuteNonQuery();
+                }
+            }
+        }
+        #endregion
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.Office.Tools.Excel;
 using VkSchelude.Types;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
+using VkSchelude.Utils;
 
 namespace VkSchelude
 {
@@ -27,9 +28,11 @@ namespace VkSchelude
         }
         public List<LessonInfo> Parse(string excelDocPath)
         {
+            Log.Logging($"Парсинг расписания из файла по адресу {excelDocPath} ..");
             if (!System.IO.File.Exists(excelDocPath))
             {
-                Console.WriteLine("Файл отсутствует в директории " + excelDocPath); // временно. должна возвращаться ошибка, чтоб тут никакой текст не выводился
+                Log.Logging($"Файл отсутствует в директории {excelDocPath}");
+                //Console.WriteLine("Файл отсутствует в директории " + excelDocPath); // временно. должна возвращаться ошибка, чтоб тут никакой текст не выводился
                 return null;
             }
             Excel.Application xlApp = new Excel.Application();

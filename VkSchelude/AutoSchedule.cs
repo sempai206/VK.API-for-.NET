@@ -16,7 +16,7 @@ using VkSchelude.Utils;
 
 namespace VkSchelude
 {
-    class Schedule
+    class AutoSchedule
     {
         public static void Start()
         {
@@ -34,7 +34,7 @@ namespace VkSchelude
                 Thread.Sleep(600000);
             }
         }
-        public static bool CheckWallForSchedule(string date)
+        private static bool CheckWallForSchedule(string date)
         {
             var wallPosts = Authorize.vkUser.Wall.Get(new WallGetParams
             {
@@ -44,7 +44,7 @@ namespace VkSchelude
             });
             foreach (var post in wallPosts.WallPosts)
             {
-                if (post.Text.Contains($"Расписание на {date}"))
+                if (post.Text.Contains($"Расписание на {date}") || post.Text.Contains($"На указанный день ({date}) занятий не найдено"))
                 {
                     return false;
                 }
