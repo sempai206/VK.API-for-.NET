@@ -16,13 +16,33 @@ namespace VkSchelude
         public static VkApi vkUser { get; set; }
         public static VkApi vkGroup { get; set; }
         public static long groupId { get; set; }
-        private static bool vkUserReq = true;
-        private static bool vkGroupReq = true;
+        public static bool vkUserReq = true;
+        public static bool vkGroupReq = true;
         public static SqlConnection connection { get; set; }
+        private static void clearAuth()
+        {
+            vkUser = new VkApi();
+            vkGroup = new VkApi();
+            groupId = 0;
+            connection = new SqlConnection();
+        }
         public static void Auth()
         {
+            clearAuth();
+            Log.Logging("Авторизация..");
             var authData = getAuthData();
             var vk = new VkApi();
+            if (!authData.ContainsKey("connectionString"))
+            {
+                Log.Logging("Подключение к БД невозможно, так как в файле authData.txt не найдена строка подключения(connectionString)");
+                vkUserReq = false;
+                vkGroupReq = false;
+            }
+            else
+            {
+                connection = new SqlConnection(authData["connectionString"]);
+                Authorize.connection.Open();
+            }
             if (!authData.ContainsKey("appId"))
             {
                 Log.Logging("В файле authData.txt не найден ID приложения(appId)");
@@ -48,33 +68,36 @@ namespace VkSchelude
                     Settings = Settings.Wall
                 });
                 vkUser = vk;
+                Log.Logging("Авторизация пользователя подключена");
+            }
+            else
+            {
+                Log.Logging("Авторизация пользователя отключена");
             }
             if (!authData.ContainsKey("groupAccessToken"))
             {
                 Log.Logging("В файле authData.txt не найден токен доступа группы(groupAccessToken)");
                 vkGroupReq = false;
             }
+            if (!authData.ContainsKey("groupId"))
+            {
+                Log.Logging("В файле authData.txt не найден ID группы(groupId)");
+                groupId = 0;
+                vkGroupReq = false;
+            }
+            else
+                groupId = long.Parse(authData["groupId"]);
             if (vkGroupReq)
             {
                 vk = new VkApi();
                 vk.Authorize(authData["groupAccessToken"]);
                 vkGroup = vk;
-            }
-            if (!authData.ContainsKey("groupId"))
-            {
-                Log.Logging("В файле authData.txt не найден ID группы(groupId)");
-                groupId = 0;
+                Log.Logging("Авторизация группы подключена");
             }
             else
-                groupId = long.Parse(authData["groupId"]);
-            if (!authData.ContainsKey("connectionString"))
-                Log.Logging("Подключение к БД невозможно, так как в файле authData.txt не найдена строка подключения(connectionString)");
-            else
             {
-                connection = new SqlConnection(authData["connectionString"]);
-                Authorize.connection.Open();
-            }
-                
+                Log.Logging("Авторизация группы отключена");
+            }    
         }
         private static Dictionary<string, string> getAuthData()
         {

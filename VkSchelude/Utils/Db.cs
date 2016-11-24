@@ -12,88 +12,73 @@ namespace VkSchelude.Utils
     {
         public static void FillTableLessons(List<LessonInfo> parsedLessons)
         {
-            FillTeachers(parsedLessons);
-            FillNamesOfLessons(parsedLessons);
-            //Authorize.connection.Open();
-            new SqlCommand("UPDATE tbl_Lessons SET isActive = 0", Authorize.connection).ExecuteNonQuery();
-            //Authorize.connection.Close();
+            //FillTeachers(parsedLessons);
+            //FillNamesOfLessons(parsedLessons);
+            new SqlCommand(DBHelper.GetInternalSQLRequest(9), Authorize.connection).ExecuteNonQuery();
             foreach (var lesson in parsedLessons)
             {
                 if (lesson.DateStart == null || lesson.DateEnd == null)
                     continue;
-                var insertCommand = "INSERT INTO tbl_Lessons " +
-                    "(DateFrom, DateTo, Number, TypeOfLesson, Classroom, DayOfWeek, TeacherId, LessonNameId) " +
-                    "VALUES " +
-                    $"(CONVERT(date, '{lesson.DateStart.Value.Date.ToString("dd.MM.yyyy")}', 104), CONVERT(date, '{lesson.DateEnd.Value.Date.ToString("dd.MM.yyyy")}', 104), {lesson.Number}, '{lesson.Type}', '{lesson.Classroom}', '{GetIdByTitle(lesson.Day, "ref_DaysOfWeek")}', {GetIdByTitle(lesson.Teacher.Trim(), "tbl_Teachers")}, {GetIdByTitle(lesson.Lesson.Trim(), "ref_NamesOfLessons")})";
-                //Authorize.connection.Open();
+                var insertCommand = DBHelper.GetInternalSQLRequest(14);
+                insertCommand.Replace("@DateStart", $"{lesson.DateStart.Value.Date}");
+                insertCommand.Replace("@DateEnd", $"{lesson.DateEnd.Value.Date}");
+                insertCommand.Replace("@Number", $"{lesson.Number}");
+                insertCommand.Replace("@TypeOfLesson", $"{lesson.Type}");
+                insertCommand.Replace("@Classroom", $"{lesson.Classroom}");
+                insertCommand.Replace("@DayOfWeek", $"{GetIdByTitle(lesson.Day.Trim(), "ref_DaysOfWeek").ToString()}");
+                insertCommand.Replace("@TeacherId", $"{GetIdByTitle(lesson.Teacher.Trim(), "tbl_Teachers")}");
+                insertCommand.Replace("@LessonNameId", $"{GetIdByTitle(lesson.Lesson.Trim(), "ref_NamesOfLessons")}");
                 new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
-                //Authorize.connection.Close();
             }
             Log.Logging("Расписание успешно занесено в БД");
         }
         private static int GetIdByTitle(string title, string table)
         {
-            //Authorize.connection.Open();
-            var id = new SqlCommand($"SELECT Id FROM {table} WHERE Title = '{title}'", Authorize.connection).ExecuteScalar();
-            //Authorize.connection.Close();
-            return (int)id;
+            //var request = DBHelper.GetInternalSQLRequest(10);
+            //request.Replace("@Table", table);
+            //request.Replace("@Title", title);
+            //return (int)DBHelper.GetObject(request)["Id"];
+            return (int)DBHelper.GetObject(DBHelper.GetInternalSQLRequest(10), new Dictionary<string, object>
+            {
+                { "@Table", table },
+                { "@Title", title }
+            })["Id"];
         }
         private static void FillTeachers(List<LessonInfo> parsedLessons)
         {
             if (Authorize.connection.State != System.Data.ConnectionState.Open)
             Authorize.connection.Open();
-            var teachersList = new List<string>();
-            var reader = new SqlCommand("SELECT * FROM tbl_Teachers", Authorize.connection).ExecuteReader();
-            while (reader.Read())
-            {
-                teachersList.Add(reader["Title"].ToString());
-            }
-            reader.Close();
-            //Authorize.connection.Close();
+            var teachersList = DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(8).Replace("@Table", "tbl_Teachers"));
             var uniqueTeachers = new List<string>();
             foreach (var lesson in parsedLessons)
                 if (!uniqueTeachers.Contains(lesson.Teacher))
                     uniqueTeachers.Add(lesson.Teacher);
             foreach (var teacher in uniqueTeachers)
             {
-                if (!teachersList.Contains(teacher))
+                if (!teachersList.Any(i => i["Title"].ToString() == teacher))
                 {
-                    var insertCommand = "INSERT INTO tbl_Teachers " +
-                    "(Title) " +
-                    "VALUES " +
-                    $"('{teacher}')";
-                    //Authorize.connection.Open();
+                    var insertCommand = DBHelper.GetInternalSQLRequest(12);
+                    insertCommand.Replace("@Table", "tbl_Teachers");
+                    insertCommand.Replace("@Value", teacher);
                     new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
                 }
-                //Authorize.connection.Close();
             }
         }
         private static void FillNamesOfLessons(List<LessonInfo> parsedLessons)
         {
-            //Authorize.connection.Open();
-            var namesOfLessonsList = new List<string>();
-            var reader = new SqlCommand("SELECT * FROM ref_NamesOfLessons", Authorize.connection).ExecuteReader();
-            while (reader.Read())
-            {
-                namesOfLessonsList.Add(reader["Title"].ToString());
-            }
-            reader.Close();
-            //Authorize.connection.Close();
+            var namesOfLessonsList = DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(8).Replace("@Table", "ref_NamesOfLessons"));
             var uniqueNamesOfLessons = new List<string>();
             foreach (var lesson in parsedLessons)
-                if (!namesOfLessonsList.Contains(lesson.Lesson))
+                if (!uniqueNamesOfLessons.Contains(lesson.Lesson))
                     uniqueNamesOfLessons.Add(lesson.Lesson);
             foreach (var lesson in uniqueNamesOfLessons)
             {
-                if (!namesOfLessonsList.Contains(lesson))
+                if (!namesOfLessonsList.Any(i => i["Title"].ToString() == lesson))
                 {
-                    var insertCommand = "INSERT INTO ref_NamesOfLessons " +
-                    "(Title) " +
-                    "VALUES " +
-                    $"('{lesson}')";
-                    //Authorize.connection.Open();
+                    var insertCommand = DBHelper.GetInternalSQLRequest(12);
+                    insertCommand.Replace("@Table", "ref_NamesOfLessons");
+                    insertCommand.Replace("@Value", lesson);
                     new SqlCommand(insertCommand, Authorize.connection).ExecuteNonQuery();
-                    //Authorize.connection.Close();
                 }
             }
         }
