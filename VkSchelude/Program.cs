@@ -42,7 +42,7 @@ namespace VkSchelude
                 vkBotThread.Start();
                 Log.Logging("Модуль бота запущен");
             }
-            if (Authorize.connection.ConnectionString == String.Empty)
+            if (!Authorize.DBReq)
                 Console.WriteLine("Команда help недоступна, т.к. отсутствует подключение к БД");
             else
                 Console.WriteLine("Используйте команду help для получения справки по командам консоли");

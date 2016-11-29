@@ -18,6 +18,7 @@ namespace VkSchelude
         public static long groupId { get; set; }
         public static bool vkUserReq = true;
         public static bool vkGroupReq = true;
+        public static bool DBReq = true;
         public static SqlConnection connection { get; set; }
         private static void clearAuth()
         {
@@ -41,7 +42,15 @@ namespace VkSchelude
             else
             {
                 connection = new SqlConnection(authData["connectionString"]);
-                Authorize.connection.Open();
+                try
+                {
+                    Authorize.connection.Open();
+                }
+                catch(Exception ex)
+                {
+                    Log.Logging("Не удалось подключиться к БД, т.к сервер SQL недоступен ил отключен");
+                    DBReq = false;
+                }
             }
             if (!authData.ContainsKey("appId"))
             {

@@ -24,12 +24,13 @@ namespace VkSchelude
             {
                 if (DateTime.Now.Hour == 20 && CheckWallForSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")))
                 {
-                Send.SendOnWall(Authorize.vkUser, 
-                                Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
+                    var message = Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
                                     { "@Date", DateTime.Now.AddDays(1) },
                                     { "@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek}
-                                    }), 
-                                DateTime.Now.AddDays(1)));
+                                    }),
+                                    DateTime.Now.AddDays(1).Date);
+                    if (!message.Equals($"На указанный день ({DateTime.Now.AddDays(1).Date}) занятий не найдено"))
+                        Send.SendOnWall(Authorize.vkUser, message);
                 }
                 Thread.Sleep(600000);
             }
