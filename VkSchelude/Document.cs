@@ -9,6 +9,7 @@ using VkSchelude.Types;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
 using VkSchelude.Utils;
+using System.Runtime.InteropServices;
 
 namespace VkSchelude
 {
@@ -89,6 +90,11 @@ namespace VkSchelude
                     $"{item.Classroom}");
             }
             //cleanup
+            xlWorkbook.Close(false, null, null);
+            xlApp.Quit();
+            Marshal.ReleaseComObject(xlWorksheet);
+            Marshal.ReleaseComObject(xlWorkbook);
+            Marshal.ReleaseComObject(xlApp);
             GC.Collect();
             GC.WaitForPendingFinalizers();
             return allLessons;
