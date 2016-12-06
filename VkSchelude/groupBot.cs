@@ -64,10 +64,14 @@ namespace VkSchelude
                                         {
                                             tryparse = DateTime.Now.AddDays(1);
                                             itemMainCommand.Id = 2;
+                                            var a = itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString();
                                             Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
                                                 new Dictionary<string, object>
                                                 {
-                                                {"@Date", DateTime.Now.AddDays(1) },
+                                                //{"@Date", DateTime.Now.AddDays(1) },
+                                                {"@Year", DateTime.Now.AddDays(1).Year },
+                                                {"@Month", DateTime.Now.AddDays(1).Month },
+                                                {"@Day", DateTime.Now.AddDays(1).Day },
                                                 {"@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek }
                                                 });
                                             //outString = GetAnswerString(2, Responce, tryparse); // 2 потому что id расписания
@@ -95,7 +99,10 @@ namespace VkSchelude
                                             Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
                                                 new Dictionary<string, object>
                                                 {
-                                                {"@Date", DateTime.Parse(partsOfMessage[1]) },
+                                                //{"@Date", DateTime.Parse(partsOfMessage[1]) },
+                                                {"@Year", tryparse.Year },
+                                                {"@Month", tryparse.Month },
+                                                {"@Day", tryparse.Day },
                                                 {"@DayOfWeek", DateTime.Parse(partsOfMessage[1]).DayOfWeek }
                                                 });
                                             //outString = GetAnswerString(itemMainCommand.Id, Responce, tryparse); // 2 потому что id расписания
