@@ -25,7 +25,9 @@ namespace VkSchelude
                 if (DateTime.Now.Hour == 20 && CheckWallForSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")))
                 {
                     var message = Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
-                                    { "@Date", DateTime.Now.AddDays(1) },
+                                    {"@Year", DateTime.Now.AddDays(1).Year },
+                                    {"@Month", DateTime.Now.AddDays(1).Month },
+                                    {"@Day", DateTime.Now.AddDays(1).Day },
                                     { "@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek}
                                     }),
                                     DateTime.Now.AddDays(1).Date);

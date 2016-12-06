@@ -89,7 +89,9 @@ namespace VkSchelude
                     else
                         Send.SendOnWall(Authorize.vkUser,
                                         Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
-                                            { "@Date", DateTime.Now.AddDays(1).Date },
+                                            {"@Year", DateTime.Now.AddDays(1).Year },
+                                            {"@Month", DateTime.Now.AddDays(1).Month },
+                                            {"@Day", DateTime.Now.AddDays(1).Day },
                                             { "@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek}
                                             }),
                                         DateTime.Now.AddDays(1).Date));
@@ -101,7 +103,9 @@ namespace VkSchelude
                     else
                         Send.SendOnWall(Authorize.vkUser,
                                     Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
-                                        { "@Date", DateTime.Now.Date },
+                                        {"@Year", DateTime.Now.Year },
+                                        {"@Month", DateTime.Now.Month },
+                                        {"@Day", DateTime.Now.Day },
                                         { "@DayOfWeek", (int)DateTime.Now.DayOfWeek}
                                         }),
                                     DateTime.Now.Date));
