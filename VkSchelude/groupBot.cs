@@ -14,7 +14,7 @@ namespace VkSchelude
 {
     class groupBot
     {
-        private static string patternStart = @"^!";
+        private static string patternStart = @"((^! {0,1})|(^. {0,1})){1}";
         public static void Start()
         {
             while (true)
@@ -31,7 +31,7 @@ namespace VkSchelude
                         if (Regex.IsMatch(dialog.Body, patternStart))
                         {
                             #region--Подготовка к работе
-                            string inputMessageText = dialog.Body;
+                            string inputMessageText = dialog.Body.ToLower();
                             if (Authorize.connection.State != System.Data.ConnectionState.Open)
                                 Authorize.connection.Open();
                             string selectRights = DBHelper.GetInternalSQLRequest(1);
@@ -41,7 +41,8 @@ namespace VkSchelude
                             var listHelper = DBHelper.GetListObject(getHelperQuery, new Dictionary<string, object> { { "@CurrentRightsId", currentRightsId } });
                             if (inputMessageText.Contains('|'))
                                 inputMessageText = inputMessageText.Substring(0, inputMessageText.IndexOf('|'));
-                            inputMessageText = inputMessageText.Trim();
+                            inputMessageText = inputMessageText.Replace("! ", "!").Replace(". ", ".").Trim();
+                            //inputMessageText = inputMessageText.Trim();
                             if (Regex.IsMatch(inputMessageText, patternStart + "(?>" + String.Join("|", listHelper.Select(i => i["Title"])) + "){1}"))
                             {
                                 DateTime tryparse = new DateTime();
@@ -93,6 +94,7 @@ namespace VkSchelude
                                 {
                                     if (itemMainCommand["Title"].ToString().Equals("расписание"))
                                     {
+                                        int? difference = null;
                                         itemMainCommand.Id = 2;
                                         if (DateTime.TryParse(partsOfMessage[1], out tryparse))
                                         {
@@ -107,6 +109,56 @@ namespace VkSchelude
                                                 });
                                             //outString = GetAnswerString(itemMainCommand.Id, Responce, tryparse); // 2 потому что id расписания
                                         }
+                                        else if (Regex.IsMatch(partsOfMessage[1], "[а-яА-ЯёЁ]+"))
+                                        {
+
+                                            string argumentText = partsOfMessage[1].ToLower();
+                                            if (argumentText.Equals("сегодня"))
+                                            {
+                                                tryparse = DateTime.Now;
+                                                Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
+                                                new Dictionary<string, object>
+                                                {{"@Year", DateTime.Now.Year },
+                                                {"@Month", DateTime.Now.Month },
+                                                {"@Day", DateTime.Now.Day },
+                                                {"@DayOfWeek", DateTime.Now.DayOfWeek }
+                                                });
+                                            }
+                                            else if (argumentText.Equals("завтра"))
+                                            {
+                                                difference = 1;
+                                            }
+                                            else if (argumentText.Equals("послезавтра"))
+                                            {
+                                                difference = 2;
+                                            }
+                                            else
+                                            {
+                                                var listDays = DBHelper.GetDictionary("SELECT Id, Title FROM ref_DaysOfWeek");
+                                                if (listDays.Any(i => i.Value.ToString().Equals(argumentText)))
+                                                {
+                                                    int dateNumber = (int)listDays.Single(i => i.Value.ToString().Equals(argumentText)).Key;
+                                                    difference = ((int)DateTime.Now.DayOfWeek) > dateNumber ? ((int)DateTime.Now.DayOfWeek) - dateNumber : dateNumber - ((int)DateTime.Now.DayOfWeek);
+                                                    if (difference == 0)
+                                                        difference = 7;
+                                                }
+
+                                            }
+                                        }
+                                        if (difference != null)
+                                        {
+                                            tryparse = DateTime.Now.AddDays((int)difference);
+                                            Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
+                                        new Dictionary<string, object>
+                                        {{"@Year", DateTime.Now.AddDays((int)difference).Year },
+                                                {"@Month", DateTime.Now.AddDays((int)difference).Month },
+                                                {"@Day", DateTime.Now.AddDays((int)difference).Day },
+                                                {"@DayOfWeek", DateTime.Now.AddDays((int)difference).DayOfWeek }
+                                        });
+                                        }
+                                        else
+                                                    if (Responce.Count == 0)
+                                            outString = "Входная строка имела неверный формат";
                                         else
                                             outString = "Входная строка имела неверный формат";
                                     }
@@ -114,7 +166,7 @@ namespace VkSchelude
                                     {
                                         itemMainCommand.Id = 6;
                                         Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
-                                            new Dictionary<string, object> { { "@FName", partsOfMessage[1]+"%"} });
+                                            new Dictionary<string, object> { { "@FName", partsOfMessage[1] + "%" } });
                                     }
                                 }
                                 #endregion
@@ -131,7 +183,7 @@ namespace VkSchelude
                                 outString = Helper.GetAnswerString(itemMainCommand.Id, Responce, tryparse); // 2 потому что id расписания
                             }
                             #endregion
-                            
+
                             if (String.IsNullOrEmpty(outString))
                                 outString = "Запрос не дал результатов";
                             Send.SendInMessages(Authorize.vkGroup, outString, dialog.UserId);
