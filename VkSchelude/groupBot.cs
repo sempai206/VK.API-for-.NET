@@ -94,7 +94,8 @@ namespace VkSchelude
                                 {
                                     if (itemMainCommand["Title"].ToString().Equals("расписание"))
                                     {
-                                        int? difference = null;
+                                        //int? difference = null;
+                                        DateTime needDate = new DateTime();
                                         itemMainCommand.Id = 2;
                                         if (DateTime.TryParse(partsOfMessage[1], out tryparse))
                                         {
@@ -126,34 +127,56 @@ namespace VkSchelude
                                             }
                                             else if (argumentText.Equals("завтра"))
                                             {
-                                                difference = 1;
+                                                //difference = 1;
+                                                needDate = DateTime.Now.AddDays(1);
                                             }
                                             else if (argumentText.Equals("послезавтра"))
                                             {
-                                                difference = 2;
+                                                //difference = 2;
+                                                needDate = DateTime.Now.AddDays(2);
                                             }
                                             else
                                             {
                                                 var listDays = DBHelper.GetDictionary("SELECT Id, Title FROM ref_DaysOfWeek");
                                                 if (listDays.Any(i => i.Value.ToString().Equals(argumentText)))
                                                 {
-                                                    int dateNumber = (int)listDays.Single(i => i.Value.ToString().Equals(argumentText)).Key;
-                                                    difference = ((int)DateTime.Now.DayOfWeek) > dateNumber ? ((int)DateTime.Now.DayOfWeek) - dateNumber : dateNumber - ((int)DateTime.Now.DayOfWeek);
-                                                    if (difference == 0)
-                                                        difference = 7;
+                                                    DayOfWeek needDay = DateTime.Now.DayOfWeek;
+                                                    switch(argumentText)
+                                                    {
+                                                        case "понедельник": needDay = DayOfWeek.Monday; break;
+                                                        case "вторник": needDay = DayOfWeek.Tuesday; break;
+                                                        case "среда": needDay = DayOfWeek.Wednesday; break;
+                                                        case "четверг": needDay = DayOfWeek.Thursday; break;
+                                                        case "пятница": needDay = DayOfWeek.Friday; break;
+                                                        case "суббота": needDay = DayOfWeek.Saturday; break;
+                                                        case "воскресенье": needDay = DayOfWeek.Sunday; break;
+                                                    }
+                                                    int dateNumber = (int)needDay;//(int)listDays.Single(i => i.Value.ToString().Equals(argumentText)).Key;
+                                                    //difference = ((int)DateTime.Now.DayOfWeek) > dateNumber ? ((int)DateTime.Now.DayOfWeek) - dateNumber : dateNumber - ((int)DateTime.Now.DayOfWeek);
+                                                    needDate = new DateTime();
+                                                    DateTime counterDate = DateTime.Now.AddDays(1).Date;
+                                                    while (needDate == new DateTime())
+                                                    {
+                                                        if (counterDate.DayOfWeek == needDay)
+                                                            needDate = counterDate;
+                                                        else
+                                                            counterDate = counterDate.AddDays(1);
+                                                    }
+                                                    //if (difference == 0)
+                                                    //    difference = 7;
                                                 }
 
                                             }
                                         }
-                                        if (difference != null)
+                                        if (needDate != new DateTime())
                                         {
-                                            tryparse = DateTime.Now.AddDays((int)difference);
+                                            tryparse = needDate;//DateTime.Now.AddDays((int)difference);
                                             Responce = DBHelper.GetListObject(itemMainCommand["SelectCommand"].ToString() + " " + itemMainCommand["WhereCommand"].ToString(),
                                         new Dictionary<string, object>
-                                        {{"@Year", DateTime.Now.AddDays((int)difference).Year },
-                                                {"@Month", DateTime.Now.AddDays((int)difference).Month },
-                                                {"@Day", DateTime.Now.AddDays((int)difference).Day },
-                                                {"@DayOfWeek", DateTime.Now.AddDays((int)difference).DayOfWeek }
+                                        {{"@Year", tryparse.Year },
+                                                {"@Month", tryparse.Month },
+                                                {"@Day", tryparse.Day },
+                                                {"@DayOfWeek", tryparse.DayOfWeek }
                                         });
                                         }
                                         else
