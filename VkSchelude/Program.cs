@@ -18,7 +18,8 @@ namespace VkSchelude
 {
     class Program
     {
-        public static Thread tomorrowScheludeThread = new Thread(AutoSchedule.Start);
+        public static System.Threading.Timer time = new System.Threading.Timer(new TimerCallback(AutoSchedule.Start), new Object(), Convert.ToInt32(Helper.test()), 86400 * 1000);
+        //public static Thread tomorrowScheludeThread = new Thread(AutoSchedule.Start);
         public static Thread vkBotThread = new Thread(groupBot.Start);
         static void Main(string[] args)
         {
@@ -26,11 +27,13 @@ namespace VkSchelude
             #region Запуск модулей
             if (Authorize.vkUserReq && !args.Contains("-noautoschedule"))
             {
-                tomorrowScheludeThread.Start();
+                //System.Threading.Timer time = new System.Threading.Timer(new TimerCallback(AutoSchedule.Start), new Object(), Convert.ToInt32(Helper.test()), 86400 * 1000)
+                //tomorrowScheludeThread.Start();
                 Log.Logging("Модуль авторасписания запущен");
             }
             else
             {
+                time.Dispose();
                 Log.Logging("Модуль авторасписания отключен");
             }
             if (!Authorize.vkUserReq || !Authorize.vkGroupReq || args.Contains("-nobot"))

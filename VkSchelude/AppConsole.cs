@@ -30,13 +30,14 @@ namespace VkSchelude
                 {
                     if (Authorize.vkUserReq)
                     {
-                        if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Unstarted || Program.tomorrowScheludeThread.ThreadState == ThreadState.Stopped)
-                        {
-                            Program.tomorrowScheludeThread.Start();
-                            Log.Logging("Модуль авторасписания запущен");
-                        }
-                        else if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Running)
-                            Log.Logging("Модуль авторасписания уже запущен");
+                        Program.time = new System.Threading.Timer(new TimerCallback(AutoSchedule.Start), new Object(), Convert.ToInt32(Helper.test()), 86400 * 1000);
+                        //if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Unstarted || Program.tomorrowScheludeThread.ThreadState == ThreadState.Stopped)
+                        //{
+                        //    Program.tomorrowScheludeThread.Start();
+                        //    Log.Logging("Модуль авторасписания запущен");
+                        //}
+                        //else if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Running)
+                        //    Log.Logging("Модуль авторасписания уже запущен");
                     }
                     else
                     {
@@ -45,15 +46,16 @@ namespace VkSchelude
                 }
                 else if (command.Equals("autoschedule stop"))
                 {
-                    if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Running || Program.tomorrowScheludeThread.ThreadState == ThreadState.WaitSleepJoin)
-                    {
-                        Program.tomorrowScheludeThread.Abort();
-                        Log.Logging("Модуль авторасписания остановлен");
-                    }
-                    else
-                    {
-                        Log.Logging("Модуль авторасписания уже остановлен");
-                    }
+                    //if (Program.tomorrowScheludeThread.ThreadState == ThreadState.Running || Program.tomorrowScheludeThread.ThreadState == ThreadState.WaitSleepJoin)
+                    //{
+                    //    Program.tomorrowScheludeThread.Abort();
+                    //    Log.Logging("Модуль авторасписания остановлен");
+                    //}
+                    //else
+                    //{
+                    //    Log.Logging("Модуль авторасписания уже остановлен");
+                    //}
+                    Program.time.Dispose();
                 }
                 else if (command.Equals("bot start"))
                 {
@@ -142,7 +144,8 @@ namespace VkSchelude
                 }
                 else if (command.Equals("exit"))
                 {
-                    Program.tomorrowScheludeThread.Abort();
+                    Program.time.Dispose();
+                    //Program.tomorrowScheludeThread.Abort();
                     Program.vkBotThread.Abort();
                     _working = false;
                 }

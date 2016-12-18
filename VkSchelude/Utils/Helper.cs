@@ -35,5 +35,16 @@ namespace VkSchelude.Utils
             }
             return answerString;
         }
+        public static double test()
+        {
+            TimeSpan lol = new TimeSpan();
+            if (DateTime.Now.Hour >= 20)
+                lol = new DateTime(DateTime.Now.AddDays(1).Year, DateTime.Now.AddDays(1).Month, DateTime.Now.AddDays(1).Day, 20, 0, 0) - DateTime.Now;
+            else
+                lol = new DateTime(DateTime.Now.Year, DateTime.Now.Month, DateTime.Now.Day, 20, 0, 0) - DateTime.Now;
+            Console.WriteLine(lol.TotalMinutes);
+            return lol.TotalMilliseconds;
+        }
+
     }
 }

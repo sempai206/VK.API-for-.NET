@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using VkNet;
 using VkNet.Enums.Filters;
 using VkNet.Model.RequestParams;
@@ -18,12 +17,8 @@ namespace VkSchelude
 {
     class AutoSchedule
     {
-        public static void Start()
+        public static void Start(object obj)
         {
-            while (true)
-            {
-                if (DateTime.Now.Hour == 20 && CheckWallForSchedule(DateTime.Now.AddDays(1).Date.ToString("dd.MM.yyyy")))
-                {
                     var message = Helper.GetAnswerString(2, DBHelper.GetListObject(DBHelper.GetInternalSQLRequest(7), new Dictionary<string, object> {
                                     {"@Year", DateTime.Now.AddDays(1).Year },
                                     {"@Month", DateTime.Now.AddDays(1).Month },
@@ -31,11 +26,8 @@ namespace VkSchelude
                                     { "@DayOfWeek", (int)DateTime.Now.AddDays(1).DayOfWeek}
                                     }),
                                     DateTime.Now.AddDays(1).Date);
-                    if (!message.Equals($"На указанный день ({DateTime.Now.AddDays(1).Date}) занятий не найдено"))
+                    if (!message.Contains($"На указанный день ({DateTime.Now.AddDays(1).Date}) занятий не найдено"))
                         Send.SendOnWall(Authorize.vkUser, message);
-                }
-                Thread.Sleep(600000);
-            }
         }
         private static bool CheckWallForSchedule(string date)
         {
