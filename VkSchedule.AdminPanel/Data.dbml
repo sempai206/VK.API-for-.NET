@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="VkSchedule" Class="DataDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=SEMPAI206PC\SEMPAISQLSERVER;Initial Catalog=VkSchedule;Integrated Security=True" SettingsObjectName="VkSchedule.AdminPanel.Properties.Settings" SettingsPropertyName="VkScheduleConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.tbl_Lessons" Member="tbl_Lessons">
+    <Type Name="tbl_Lessons">
+      <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="DateFrom" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
+      <Column Name="DateTo" Type="System.DateTime" DbType="Date NOT NULL" CanBeNull="false" />
+      <Column Name="Number" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="TypeOfLesson" Type="System.String" DbType="NVarChar(20)" CanBeNull="true" />
+      <Column Name="TeacherId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="LessonNameId" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="Classroom" Type="System.String" DbType="NVarChar(20) NOT NULL" CanBeNull="false" />
+      <Column Name="DayOfWeek" Type="System.String" DbType="NVarChar(15) NOT NULL" CanBeNull="false" />
+      <Column Name="IsActive" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="tbl_Teachers_tbl_Lessons" Member="tbl_Teachers" ThisKey="TeacherId" OtherKey="Id" Type="tbl_Teachers" IsForeignKey="true" />
+      <Association Name="ref_NamesOfLessons_tbl_Lessons" Member="ref_NamesOfLessons" ThisKey="LessonNameId" OtherKey="Id" Type="ref_NamesOfLessons" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.tbl_Teachers" Member="tbl_Teachers">
+    <Type Name="tbl_Teachers">
+      <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Title" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="FullName" Type="System.String" DbType="NVarChar(100)" CanBeNull="true" />
+      <Column Name="Rank" Type="System.String" DbType="NVarChar(30)" CanBeNull="true" />
+      <Column Name="Chair" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="IsReal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="tbl_Teachers_tbl_Lessons" Member="tbl_Lessons" ThisKey="Id" OtherKey="TeacherId" Type="tbl_Lessons" />
+    </Type>
+  </Table>
+  <Table Name="dbo.ref_NamesOfLessons" Member="ref_NamesOfLessons">
+    <Type Name="ref_NamesOfLessons">
+      <Column Name="Id" Type="System.Int32" DbType="Int NOT NULL IDENTITY" IsPrimaryKey="true" IsDbGenerated="true" CanBeNull="false" />
+      <Column Name="Title" Type="System.String" DbType="NVarChar(100) NOT NULL" CanBeNull="false" />
+      <Association Name="ref_NamesOfLessons_tbl_Lessons" Member="tbl_Lessons" ThisKey="Id" OtherKey="LessonNameId" Type="tbl_Lessons" />
+    </Type>
+  </Table>
+</Database>
